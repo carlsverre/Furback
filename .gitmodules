@@ -1,0 +1,3 @@
+[submodule "vendor/jasper-client"]
+	path = vendor/jasper-client
+	url = git@github.com:jasperproject/jasper-client.git

@@ -1,0 +1,56 @@
+#!/bin/bash
+
+NO_COLOR="\033[0m"
+OK_COLOR="\033[0;34m"
+ERROR_COLOR="\033[0;31m"
+YELLOW_COLOR="\033[0;32m"
+
+# Resolve script directory path
+ROOTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PYTHON_ENV="$ROOTDIR/python_env"
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo -e "${OK_COLOR}Starting development subshell${NO_COLOR}"
+    cd "$ROOTDIR"
+
+    tempprefix=$(basename $0)
+    tempdir=$(mktemp -d /tmp/${tempprefix}.XXXXXX)
+
+    ZSHSTUB="
+    if [ -e ~/.zshrc ]; then . ~/.zshrc; fi;
+    source ./activate;
+    RPROMPT+=\" %F{yellow}PF%f%b\";
+    rm -- $tempdir/.*; rmdir $tempdir;
+    "
+    BASHSTUB="
+    if [ -e ~/.bashrc ]; then . ~/.bashrc; fi;
+    source ./activate;
+    PS1=\"${YELLOW_COLOR}PF${NO_COLOR} \$PS1\";
+    rm -- $tempdir/*; rmdir $tempdir;
+    "
+
+    case $SHELL in
+        */zsh)
+            echo $ZSHSTUB >"$tempdir/.zshrc"
+            ZDOTDIR=$tempdir $SHELL
+            ;;
+        */bash)
+            echo $BASHSTUB >"$tempdir/bashrc"
+            $SHELL --rcfile "$tempdir/bashrc"
+            ;;
+        *)
+            echo -e "${ERROR_COLOR}Could not find supported shell, make sure SHELL is defined.  Only ZSH and BASH are currently supported.${NO_COLOR}"
+            ;;
+    esac
+else
+    # build the virtualenv if it doesn't exist
+    if [ ! -d "$PYTHON_ENV" ]; then
+	    virtualenv $PYTHON_ENV
+    fi
+
+    # include the virtualenv's environment
+    source "$PYTHON_ENV/bin/activate"
+
+    # make sure we can run all of our tools
+    export PATH="$ROOTDIR/bin:$PATH"
+fi
