@@ -2,3 +2,4 @@ python_env
 *.pyc
 build
 .vagrant
+*~
