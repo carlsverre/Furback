@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 NO_COLOR=\033[0m
 INFO_COLOR=\033[32;01m
 OK_COLOR=\033[31;32m
@@ -10,7 +12,7 @@ all: deps
 .PHONY: deps
 deps:
 	@echo "$(INFO_COLOR)==> Checking/Installing dependencies$(NO_COLOR)"
-	@source ./activate && pip install -Ur requirements.txt
+	@source activate && pip install -r requirements.txt
 
 .PHONY: clean
 clean:
