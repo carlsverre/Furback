@@ -32,5 +32,5 @@ if __name__ == "__main__":
     furby.listen_for(["thank"], 60)
 
     furby.do("burp")
-    furby.wait(1.0)
+    furby.wait(2.0)
     furby.do("food")
