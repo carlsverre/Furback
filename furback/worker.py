@@ -5,124 +5,99 @@ import time
 import os
 import json
 import glob
-import re
+
+from wraptor.decorators import throttle
+
+from tornado.concurrent import Future
 
 from furback.db import DB
 from furback.api import ApiServer
 from furback.runner import Runner
+from furback.index import Index
 from furback import tiara
 
-bad_stuff = re.compile(r"[\.,-\/#!$%\^&\*;\?:{}=\-_`~()]")
+from collections import deque
 
 class Worker(object):
     def start(self):
+        self._running = True
         self.logger = logging.getLogger(__name__)
-        self.runner_index = {}
+        self.index = Index()
 
-        self.run_lock = threading.Lock()
+        self.process_queue = deque()
+
         signal.signal(signal.SIGINT, self.cleanup)
         signal.signal(signal.SIGTERM, self.cleanup)
 
-        messages = [None, None]
-
         self.db = DB()
 
-        self.api = ApiServer(messages)
+        self.api = ApiServer(self)
         self.api.start()
 
+        # load scripts from filesystem into db
         for script in glob.glob("./modules/*.py"):
             meta = json.loads(open(script + ".meta").read())
             self.db.save_script(os.path.basename(script).rstrip(".py"), open(script).read(), meta['priority'], meta['words'])
 
-        self.load_scripts()
-        whee = 0
+        while self._running:
+            self.load_scripts()
 
-        while self.run_lock.acquire(False):
             try:
-                whee += 1
-                if whee % 100 == 0:
-                    changes = self.db.get_changes()
-                    if changes is not None:
-                        self.load_scripts()
-
-                out = messages[0]
-                if out:
-                    print("received: %s" % out)
-                    messages[0], messages[1] = None, self.process(out)
-
-            finally:
-                self.run_lock.release()
-
-            time.sleep(0.01)
+                text, future = self.process_queue.popleft()
+                out = self._process(text)
+                future.set_result(out)
+            except IndexError:
+                time.sleep(0.001)
 
         print("goodbye")
 
+    @throttle(1, instance_method=True)
     def load_scripts(self):
-        scripts = self.db.get_scripts()
-        index = {}
-
-        for script in scripts:
-            for word in script['words']:
-                if word:
-                    word = word.lower()
-                    if word in index:
-                        if index[word]['priority'] < script['priority']:
-                            index[word] = script
-                    else:
-                        index[word] = script
-
-        self.index = index
+        changes = self.db.get_changes()
+        if changes is not None:
+            scripts = self.db.get_scripts()
+            for script in scripts:
+                if len(script['words']):
+                    self.index.script(script['name'], script['words'], script['priority'], script['body'])
 
     def process(self, text):
-        runner = None
-        script = None
-        for word in re.sub(bad_stuff, "", text).split(" "):
-            word = word.strip().lower()
-            if word:
-                for key in self.runner_index.keys():
-                    if key in word:
-                        if self.runner_index[key].running():
-                            print "picking runner %s because %s" % (key, word)
-                            runner = self.runner_index[key]
-                            break
-                        else:
-                            del self.runner_index[key]
+        future = Future()
+        self.process_queue.append((text, future))
+        return future
 
-                for key in self.index.keys():
-                    if key in word:
-                        print "picking script %s because %s" % (key, word)
-                        script = self.index[key]
-                        break
+    def _process(self, text):
+        print("Processing: `%s`" % text)
+        match = self.index.lookup(text)
 
-        if script is None and runner is None:
+        if match is None:
             return "not found; %s" % tiara.Respond(text)
 
-        if runner is None:
-            print("creating new runner")
-            runner = Runner(script['body'])
+        if isinstance(match, str):
+            # we have a script body!
+            print("Creating new runner")
+            runner = Runner(match)
             runner.run()
-            runner.write(text)
         else:
-            print("found existing runner")
-            runner.write(text)
+            runner = match
+
+        print("Writing input `%s`" % text)
+        runner.write(text)
 
         out = ""
         while runner.running():
             next_read = runner.read().strip()
-            if "listen_for" in next_read:
-                _, words = next_read.split(" ")
-                words = words.split(",")
-                for word in words:
-                    if word:
-                        print("adding %s" % word)
-                        self.runner_index[word.lower()] = runner
-                break
-            elif next_read:
-                print("got: %s" % next_read)
-                out += next_read + "\n"
+            if next_read:
+                if next_read.startswith("listen_for"):
+                    _, words = next_read.split(" ", 1)
+                    self.index.listen_for([w.strip().lower() for w in words.split(",")], runner)
+                    break
+                else:
+                    print("Got: `%s`" % next_read)
+                    out += next_read + "\n"
 
         return out.strip() + "\n"
 
     def cleanup(self, signal, frame):
-        self.run_lock.acquire()
+        print("Exiting...")
+        self._running = False
         self.api.stop()

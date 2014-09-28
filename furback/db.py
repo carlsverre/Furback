@@ -22,7 +22,7 @@ class DB(object):
         script_names = self.r.smembers("scripts") or []
         scripts = [self.r.hgetall(s) for s in script_names]
         for script in scripts:
-            script['words'] = script['words'].split(',')
+            script['words'] = {w.strip() for w in script['words'].split(',')}
         return scripts
 
     def get_changes(self):

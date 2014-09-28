@@ -1,5 +1,8 @@
 import sys
 import select
+import signal
+
+_initial_input = None
 
 FURBY_COMMANDS = {
     "sleep": 700,
@@ -13,8 +16,31 @@ FURBY_COMMANDS = {
     "hypno": 820,
 }
 
+def _wait_input(timeout):
+    r, w, e = select.select([ sys.stdin ], [], [], timeout)
+    if sys.stdin in r:
+        new = sys.stdin.readline().strip()
+        sys.stderr.write("Received input: `%s`\n" % new)
+        return new
+    else:
+        sys.stderr.write("No input received after %f seconds\n" % timeout)
+        sys.exit(0)
+
+def _exit(signal, frame):
+    sys.stderr.write("Exiting due to signal\n")
+    sys.exit(0)
+
+def _init():
+    global _initial_input
+
+    signal.signal(signal.SIGINT, _exit)
+    signal.signal(signal.SIGTERM, _exit)
+
+    _initial_input = _wait_input(1)
+    return _initial_input
+
 def get_input():
-    return sys.stdin.readline()
+    return _initial_input
 
 def listen_for(words, timeout=1):
     sys.stdout.write('listen_for %s\n' % ','.join(str(w).strip() for w in words))

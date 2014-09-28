@@ -1,35 +1,26 @@
-import logging
-import time
-
+from tornado import gen
 from tornado import web
 from tornado import httpserver
 from tornado import ioloop
 
 from furback.super_thread import SuperThread
 
-logger = logging.getLogger(__name__)
-
 class ApiHttpHandler(web.RequestHandler):
-    def initialize(self, messages):
-        self.messages = messages
+    def initialize(self, worker):
+        self.worker = worker
 
+    @gen.coroutine
     def get(self):
         text = self.get_argument("text")
-        self.messages[0] = text
-        self.messages[1] = None
-
-        while self.messages[1] is None:
-            time.sleep(0.001)
-
-        out = self.messages[1]
+        out = yield self.worker.process(text.lower())
         print("sending: %s" % out)
         self.finish(out)
 
 class ApiServer(SuperThread):
     sleep = 0
 
-    def __init__(self, messages):
-        self.messages = messages
+    def __init__(self, worker):
+        self.worker = worker
         SuperThread.__init__(self)
 
     def setup(self):
@@ -37,7 +28,7 @@ class ApiServer(SuperThread):
         self._host = "0.0.0.0"
         self._port = 9000
         self._routes = [
-            (r"/", ApiHttpHandler, { "messages": self.messages })
+            (r"/", ApiHttpHandler, { "worker": self.worker })
         ]
 
     def work(self):
@@ -46,7 +37,7 @@ class ApiServer(SuperThread):
         server = httpserver.HTTPServer(request_callback=app, io_loop=self._loop)
         server.listen(address=self._host, port=self._port)
 
-        logger.info("Listening on %s:%d", self._host, self._port)
+        print("Listening on %s:%d" % (self._host, self._port))
 
         self._set_interval(self._check_closed, 1000)
 

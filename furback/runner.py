@@ -8,10 +8,16 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 PYTHON = os.path.join(ROOT, "python_env", "bin", "python")
 
+SCRIPT_HEADER = """
+from furback import furby
+initial_input = furby._init()
+"""
+
 class Runner(object):
     def __init__(self, script_content):
         self.script_file = tempfile.NamedTemporaryFile(delete=False)
         os.chmod(self.script_file.name, stat.S_IREAD | stat.S_IEXEC | stat.S_IWRITE)
+        self.script_file.write(SCRIPT_HEADER)
         self.script_file.write(script_content)
         self.script_file.flush()
         self.script_file.close()
