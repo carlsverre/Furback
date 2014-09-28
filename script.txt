@@ -1,0 +1,7 @@
+
+
+Rotten Tomatoes:
+   * What movie should I go see?
+   * Oh, yeah.  Is it good?
+   * Who's in it?
+   * Whats it about? /* this is kind of weird because itll be really obvious that we're just taking the synopsis from the interwebz, but like, thats fine and kind of funny */
