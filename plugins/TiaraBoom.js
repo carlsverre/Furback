@@ -1,5 +1,7 @@
 var rl = require('readline');
 
+var path = "/vagrant/plugins/"
+
 function AddWordsToCorpus(words,corpus,dict)
 {
   for (var j=0; j < words.length; j++)
@@ -60,12 +62,12 @@ var fs = require('fs');
 
 function LoadDictionary()
 {
-    return JSON.parse(fs.readFileSync("ideas_json",'utf-8'));
+    return JSON.parse(fs.readFileSync(path + "ideas_json",'utf-8'));
 }
 
 function LoadCoOccuranceDict()
 {
-    return JSON.parse(fs.readFileSync("CoOcc.txt",'utf-8'));
+    return JSON.parse(fs.readFileSync(path + "CoOcc.txt",'utf-8'));
 }
 
 
@@ -215,16 +217,16 @@ function chooseResponse(tweets, maxtrials, file)
 
 function LoadNegativeWords()
 {
-    return fs.readFileSync("negative.txt",'utf-8').replace(/\n/g," "); 
+    return fs.readFileSync(path + "negative.txt",'utf-8').replace(/\n/g," "); 
 }
 function LoadAllTweets()
 {
-    return fs.readFileSync("tweets.txt",'utf-8').split("\n").reverse();
+    return fs.readFileSync(path + "tweets.txt",'utf-8').split("\n").reverse();
 }
 
 function getRandomSentence(sentencefile)
 {
-    var result = fs.readFileSync(sentencefile,'utf-8').split("\n"); 
+    var result = fs.readFileSync(path + sentencefile,'utf-8').split("\n"); 
     var theresult = result[Math.floor(Math.random() * result.length)]; 
     return theresult;
 }
