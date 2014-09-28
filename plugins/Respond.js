@@ -1,3 +1,3 @@
-var r = require("./TiaraBoom");
+var r = require("vagrant/plugins/TiaraBoom");
 
 r.Respond();
