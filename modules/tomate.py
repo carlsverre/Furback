@@ -1,7 +1,6 @@
 import requests as r
 import random
 from furback import furby
-import sys
 
 def RandomFilmInTheaters():
     requestStr = "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json?page_limit=16&page=1&country=us&apikey=g2kvspudnrghwq8nfyak258t"

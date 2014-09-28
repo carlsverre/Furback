@@ -10,6 +10,7 @@ import re
 from furback.db import DB
 from furback.api import ApiServer
 from furback.runner import Runner
+from furback import tiara
 
 bad_stuff = re.compile(r"[\.,-\/#!$%\^&\*;\?:{}=\-_`~()]")
 
@@ -62,11 +63,13 @@ class Worker(object):
 
         for script in scripts:
             for word in script['words']:
-                if word in index:
-                    if index[word]['priority'] < script['priority']:
+                if word:
+                    word = word.lower()
+                    if word in index:
+                        if index[word]['priority'] < script['priority']:
+                            index[word] = script
+                    else:
                         index[word] = script
-                else:
-                    index[word] = script
 
         self.index = index
 
@@ -74,11 +77,12 @@ class Worker(object):
         runner = None
         script = None
         for word in re.sub(bad_stuff, "", text).split(" "):
-            word = word.strip()
+            word = word.strip().lower()
             if word:
                 for key in self.runner_index.keys():
-                    if key in word or key == word:
+                    if key in word:
                         if self.runner_index[key].running():
+                            print "picking runner %s because %s" % (key, word)
                             runner = self.runner_index[key]
                             break
                         else:
@@ -86,11 +90,12 @@ class Worker(object):
 
                 for key in self.index.keys():
                     if key in word:
+                        print "picking script %s because %s" % (key, word)
                         script = self.index[key]
                         break
 
         if script is None and runner is None:
-            return "say four oh four not found"
+            return "not found; %s" % tiara.Respond(text)
 
         if runner is None:
             print("creating new runner")
@@ -108,8 +113,9 @@ class Worker(object):
                 _, words = next_read.split(" ")
                 words = words.split(",")
                 for word in words:
-                    print("adding %s" % word)
-                    self.runner_index[word] = runner
+                    if word:
+                        print("adding %s" % word)
+                        self.runner_index[word.lower()] = runner
                 break
             elif next_read:
                 print("got: %s" % next_read)
