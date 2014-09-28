@@ -1,6 +1,6 @@
 var rl = require('readline');
 
-var path = "/vagrant/plugins/"
+var path = "/vagrant/plugins/";
 
 function AddWordsToCorpus(words,corpus,dict)
 {
