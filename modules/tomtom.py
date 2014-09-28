@@ -19,7 +19,7 @@ def SayDirections(dirs):
 def Handle(query):
     if "starbucks" in query:
         SayDirections(directions_starbucks)
-    elif if "phil" in query or "fil" in query:
+    elif "phil" in query or "fil" in query:
         SayDirections(directions_phillz)
         furby.wait(2)
         furby.do("fart")
