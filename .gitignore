@@ -3,3 +3,4 @@ python_env
 build
 .vagrant
 *~
+*.jar
