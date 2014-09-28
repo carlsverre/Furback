@@ -4,3 +4,4 @@ build
 .vagrant
 *~
 *.jar
+plugins/tweets.txt
