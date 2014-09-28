@@ -29,8 +29,6 @@ def Handle(query):
     if "theater" in query or "movie" in query:
         film = RandomFilmInTheaters()
         furby.say("Go see %s." % film['title'])
-        query = furby.listen_for(["who","actor","star"], timeout=60.0)
-        Handle(query)
     elif film and "who" in query or "actor" in query or "star" in query:
         actor = random.choice(film["abridged_cast"])
         furby.say("It's starring %s as %s.  %s." % (actor["name"], actor["characters"][0],
@@ -45,6 +43,10 @@ def Handle(query):
             furby.say(syn)
     elif film and "good":
         furby.say("%s" % RatingOpinion(film["ratings"]["audience_score"]))
+    
+    query = furby.listen_for(additional_words, timeout=60.0)
+    Handle(query)
+        
 
 if __name__ == "__main__":
     query = furby.get_input()
