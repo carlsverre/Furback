@@ -22,7 +22,7 @@ def RatingOpinion(rating):
     return random.choice(["It looks awesome!", "Its gonna blow your mind!", "Best movie ever.", "Lets go!", "awesome tastic!"])
 
 
-additional_words = ["who","actor","star","about","good","like"]
+additional_words = ["who","actor","star","about","good"]
 
 def Handle(query):
     global film
@@ -34,17 +34,17 @@ def Handle(query):
         furby.say("It's starring %s as %s.  %s." % (actor["name"], actor["characters"][0],
                                                     random.choice(["What a hottie","I don't like them", "I love them", "What a hearthrob", "I'd see that", 
                                                                    "LAME", "I'd tap that"])))
-    elif film and "about":
+    elif film and "about" in query:
         syn = film['synopsis']
-        ix = syn.index('(C)')
+        ix = syn.index('.')
         if ix != -1:
             furby.say(syn[:ix])
         else:
-            furby.say(syn)
-    elif film and "good":
+            furby.say(syn[:50])
+    elif film and "good" in query:
         furby.say("%s" % RatingOpinion(film["ratings"]["audience_score"]))
     
-    query = furby.listen_for(additional_words, timeout=60.0)
+    query = furby.listen_for(additional_words, timeout=30.0)
     Handle(query)
         
 
