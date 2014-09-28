@@ -13,7 +13,6 @@ from furback.db import DB
 from furback.api import ApiServer
 from furback.runner import Runner
 from furback.index import Index
-from furback import tiara
 
 from collections import deque
 
@@ -70,7 +69,7 @@ class Worker(object):
         match = self.index.lookup(text)
 
         if match is None:
-            return "say not found; %s\n" % tiara.Respond(text)
+            return "say Can I get a what what?\n"
 
         if isinstance(match, str):
             # we have a script body!
