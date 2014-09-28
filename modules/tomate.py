@@ -1,5 +1,7 @@
 import requests as r
 import random
+from furback import furby
+import sys
 
 def RandomFilmInTheaters():
     requestStr = "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json?page_limit=16&page=1&country=us&apikey=g2kvspudnrghwq8nfyak258t"
@@ -23,10 +25,10 @@ def RatingOpinion(rating):
 
 def Handle(query):
     global film
-    if "theater" in query or "else" in query:
+    if "theater" in query or "movie" in query:
         film = RandomFilmInTheaters()
         furby.say("Go see %s. %s" % (film['title'], RatingOpinion(film["ratings"]["audience_score"])))
-        query = furby.listen_for("who","actor","else","star","theater", timeout=60.0)
+        query = furby.listen_for(["who","actor","star"], timeout=60.0)
         Handle(query)
     elif film and "who" in query or "actor" in query or "star" in query:
         furby.say("It's starring %s.  %s." % (random.choice(film["abridged_cast"])["name"], 

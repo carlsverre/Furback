@@ -1,4 +1,5 @@
 import redis
+from datetime import datetime
 
 class DB(object):
     def __init__(self):
@@ -6,12 +7,23 @@ class DB(object):
         self.sub = self.r.pubsub()
         self.sub.subscribe("changes")
 
+    def save_script(self, name, content, priority, words):
+        self.r.hmset(name, {
+            "name": name,
+            "created": datetime.now(),
+            "body": content,
+            "priority": priority,
+            "words": ','.join(words)
+        })
+        self.r.sadd("scripts", name)
+        self.r.publish("changes", name)
+
     def get_scripts(self):
-        script_names = self.r.get("scripts") or []
-        return [self.r.hgetall(s) for s in script_names]
-            
-        self.sub_output = self.r.pubsub()
-        self.sub_output.subscribe("text_output")
+        script_names = self.r.smembers("scripts") or []
+        scripts = [self.r.hgetall(s) for s in script_names]
+        for script in scripts:
+            script['words'] = script['words'].split(',')
+        return scripts
 
     def get_changes(self):
         out = self.sub.get_message()

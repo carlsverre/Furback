@@ -2,14 +2,21 @@ import signal
 import threading
 import logging
 import time
+import os
+import json
+import glob
+import re
 
 from furback.db import DB
 from furback.api import ApiServer
 from furback.runner import Runner
 
+bad_stuff = re.compile(r"[\.,-\/#!$%\^&\*;\?:{}=\-_`~()]")
+
 class Worker(object):
     def start(self):
         self.logger = logging.getLogger(__name__)
+        self.runner_index = {}
 
         self.run_lock = threading.Lock()
         signal.signal(signal.SIGINT, self.cleanup)
@@ -22,7 +29,11 @@ class Worker(object):
         self.api = ApiServer(messages)
         self.api.start()
 
-        self.scripts = self.db.get_scripts()
+        for script in glob.glob("./modules/*.py"):
+            meta = json.loads(open(script + ".meta").read())
+            self.db.save_script(os.path.basename(script).rstrip(".py"), open(script).read(), meta['priority'], meta['words'])
+
+        self.load_scripts()
         whee = 0
 
         while self.run_lock.acquire(False):
@@ -31,7 +42,7 @@ class Worker(object):
                 if whee % 100 == 0:
                     changes = self.db.get_changes()
                     if changes is not None:
-                        self.scripts = self.db.get_scripts()
+                        self.load_scripts()
 
                 out = messages[0]
                 if out:
@@ -45,13 +56,65 @@ class Worker(object):
 
         print("goodbye")
 
-    def process(self, text):
-        if "weather" in text:
-            return "say It's always sunny in Philadelphia"
-        elif "improv" in text:
-            return "say Yes and\nwait 100\ndo 868"
+    def load_scripts(self):
+        scripts = self.db.get_scripts()
+        index = {}
 
-        return "say four oh four Not found"
+        for script in scripts:
+            for word in script['words']:
+                if word in index:
+                    if index[word]['priority'] < script['priority']:
+                        index[word] = script
+                else:
+                    index[word] = script
+
+        self.index = index
+
+    def process(self, text):
+        runner = None
+        script = None
+        for word in re.sub(bad_stuff, "", text).split(" "):
+            word = word.strip()
+            if word:
+                for key in self.runner_index.keys():
+                    if key in word:
+                        if self.runner_index[key].running():
+                            runner = self.runner_index[key]
+                            break
+                        else:
+                            del self.runner_index[key]
+
+                for key in self.index.keys():
+                    if key in word:
+                        script = self.index[key]
+                        break
+
+        if script is None and runner is None:
+            return "say four oh four not found"
+
+        if runner is None:
+            print("creating new runner")
+            runner = Runner(script['body'])
+            runner.run()
+            runner.write(text)
+        else:
+            print("found existing runner")
+            runner.write(text)
+
+        out = ""
+        while runner.running():
+            next_read = runner.read().strip()
+            if "listen_for" in next_read:
+                _, words = next_read.split(" ")
+                words = words.split(",")
+                for word in words:
+                    self.runner_index[word] = runner
+                break
+            elif next_read:
+                print("got: %s" % next_read)
+                out += next_read + "\n"
+
+        return out.strip() + "\n"
 
     def cleanup(self, signal, frame):
         self.run_lock.acquire()

@@ -12,7 +12,7 @@ class Runner(object):
     def __init__(self, script_content):
         self.script_file = tempfile.NamedTemporaryFile(delete=False)
         os.chmod(self.script_file.name, stat.S_IREAD | stat.S_IEXEC | stat.S_IWRITE)
-        self.script_file.write('import furback; print("hi")')
+        self.script_file.write(script_content)
         self.script_file.flush()
         self.script_file.close()
 
@@ -23,6 +23,14 @@ class Runner(object):
         env = copy.deepcopy(os.environ)
         env['PYTHONPATH'] = ':'.join(sys.path)
 
-        self.proc = subprocess.Popen([PYTHON, self.script_file.name], env=env)
-        print(self.proc.communicate())
-        print(self.proc.wait())
+        self.proc = subprocess.Popen([PYTHON, self.script_file.name], env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=False)
+
+    def write(self, text):
+        self.proc.stdin.write(text + "\n")
+        self.proc.stdin.flush()
+
+    def read(self):
+        return self.proc.stdout.readline()
+
+    def running(self):
+        return self.proc.poll() is None

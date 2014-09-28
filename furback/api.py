@@ -1,7 +1,6 @@
 import logging
 import time
 
-from tornado import gen
 from tornado import web
 from tornado import httpserver
 from tornado import ioloop
