@@ -12,8 +12,8 @@ directions_phillz = ["Head west in 24th Street towards York Street",
 def SayDirections(dirs):
     for s in dirs[:-1]:
         furby.say(s)
-        furby.wait(500.0)
-    furby.wait(500.0) # wait longer before the joke at the end
+        furby.wait(0.5000)
+    furby.wait(0.5000) # wait longer before the joke at the end
     furby.say(dirs[-1])
 
 def Handle(query):

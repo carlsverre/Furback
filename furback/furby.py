@@ -14,6 +14,7 @@ FURBY_COMMANDS = {
     "yawn": 718,
     "whisper": 719,
     "hypno": 820,
+    "food" : 350, 
 }
 
 def _wait_input(timeout):

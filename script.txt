@@ -9,3 +9,10 @@ Rotten Tomatoes:
 TomTom:
    * Furby, can you give me #directions to starbucks /* he'll suggest you go to phillz instead */
    * Ok, can you give me #directions to phillz
+
+Pie:
+   * Furby, lets #bake a #pie  /* tells you the ingredients */
+   * #What then? /* gives one step out of three */
+   * Ok, #what #next?  /* gives one step out of three */
+   * And #then? /* gives one step out of three */
+   * Thanks furby /* he'll say you're welcome */

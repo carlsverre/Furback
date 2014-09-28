@@ -15,7 +15,7 @@ if __name__ == "__main__":
     furby.say("to make this recipie you will need")
     for s in ingredients
         furby.say(s)
-        furby.wait(100.0)
+        furby.wait(0.2)
 
     furby.listen_for(["what"], 60) 
 
@@ -28,3 +28,9 @@ if __name__ == "__main__":
     furby.listen_for(["what","then","next"], 60) 
 
     furby.say("Bake 15 minutes in the preheated oven. Reduce the temperature to 350 degrees Farenheight. Continue baking for 35 to 45 minutes, until apples are soft.")
+    
+    furby.listen_for(["thank"], 60)
+
+    furby.do("burp")
+    furby.wait(1.0)
+    furby.do("food")
