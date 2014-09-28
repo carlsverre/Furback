@@ -1,14 +1,13 @@
 from furback import furby
 
-directions_starbucks = ["Head west in 24th Street towards York Street",
-                        "Then turn right on Bryant Street",
-                        "Then turn left onto mariposa street",
+directions_starbucks = ["Head south on 24th Street towards York Street",
                         "The starbucks is on your left",
                         "But Phillz is better"]
 
-directions_phillz = ["Head west in 24th Street towards York Street",
-                     "The Phillz is on your left",
+directions_phillz = ["Head east on bryant",
+                     "The Phillz is on the corner",
                      "Can you get me a dancing waters?"]
+
 def SayDirections(dirs):
     for s in dirs[:-1]:
         furby.say(s)
@@ -19,11 +18,10 @@ def SayDirections(dirs):
 def Handle(query):
     if "starbucks" in query:
         SayDirections(directions_starbucks)
-    elif "phil" in query or "fil" in query:
+    else:
         SayDirections(directions_phillz)
         furby.wait(2)
         furby.do("fart")
-        
 
 if __name__ == "__main__":
     query = furby.get_input()

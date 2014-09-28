@@ -1,5 +1,3 @@
-
-
 Rotten Tomatoes:
    * What #movie should I go see?
    * Oh, yeah.  Is it #good?

@@ -2,17 +2,14 @@ from furback import furby
 
 ingredients = ["one nine inch pie crust",
                "eight granny smith apples",
-               "one half cup unsalted butter",
                "three tablespoons all purpose flour",
-               "one fourth cup water",
-               "one half cup white sugar",
                "one half cup packed brown sugar"]
 
 
 
 
 if __name__ == "__main__":
-    furby.say("to make this recipie you will need")
+    furby.say("to make this recipe you will need")
     for s in ingredients:
         furby.say(s)
         furby.wait(0.2)
