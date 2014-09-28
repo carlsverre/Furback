@@ -77,7 +77,7 @@ class Worker(object):
             word = word.strip()
             if word:
                 for key in self.runner_index.keys():
-                    if key in word:
+                    if key in word or key == word:
                         if self.runner_index[key].running():
                             runner = self.runner_index[key]
                             break
@@ -108,6 +108,7 @@ class Worker(object):
                 _, words = next_read.split(" ")
                 words = words.split(",")
                 for word in words:
+                    print("adding %s" % word)
                     self.runner_index[word] = runner
                 break
             elif next_read:

@@ -19,9 +19,11 @@ def get_input():
 def listen_for(words, timeout=1):
     sys.stdout.write('listen_for %s\n' % ','.join(str(w).strip() for w in words))
     sys.stdout.flush()
+
     r, w, e = select.select([ sys.stdin ], [], [], timeout)
     if sys.stdin in r:
-        return sys.stdin.readline()
+        new = sys.stdin.readline()
+        return new
     else:
         sys.exit(0)
 
