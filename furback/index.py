@@ -43,10 +43,9 @@ class Index(object):
         self.runners = [r for r in self.runners if r.runner.running() ]
 
         tokens = re.sub(bad_stuff, "", text.lower()).split(" ")
+        print("Running lookup on %s" % tokens)
 
         for token in tokens:
-            print("Checking for runners: `%s`" % token)
-
             # short circuit match runners
             for info in self.runners:
                 # protect against runners dieing between beginning of lookup and here

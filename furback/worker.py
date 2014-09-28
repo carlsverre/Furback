@@ -1,5 +1,4 @@
 import signal
-import threading
 import logging
 import time
 import os
@@ -66,11 +65,10 @@ class Worker(object):
         return future
 
     def _process(self, text):
-        print("Processing: `%s`" % text)
         match = self.index.lookup(text)
 
         if match is None:
-            return "not found; %s" % tiara.Respond(text)
+            return "not found; %s\n" % tiara.Respond(text)
 
         if isinstance(match, str):
             # we have a script body!
