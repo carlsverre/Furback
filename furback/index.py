@@ -22,7 +22,8 @@ class Index(object):
         if existing is None:
             # first time we have seen this script
             for word in words:
-                self.idx[word].append(name)
+                if word.strip():
+                    self.idx[word].append(name)
         else:
             # we need to figure out what to add and remove
             to_remove = existing.words - words
@@ -31,7 +32,8 @@ class Index(object):
             for word in to_remove:
                 self.idx[word].remove(name)
             for word in to_add:
-                self.idx[word].append(name)
+                if word.strip():
+                    self.idx[word].append(name)
 
     def listen_for(self, words, runner):
         print("Listening for %s" % words)

@@ -1,5 +1,5 @@
 import redis
-from datetime import datetime
+import time
 
 class DB(object):
     def __init__(self):
@@ -10,7 +10,7 @@ class DB(object):
     def save_script(self, name, content, priority, words):
         self.r.hmset(name, {
             "name": name,
-            "created": datetime.now(),
+            "created": time.time(),
             "body": content,
             "priority": priority,
             "words": ','.join(words)
@@ -22,7 +22,7 @@ class DB(object):
         script_names = self.r.smembers("scripts") or []
         scripts = [self.r.hgetall(s) for s in script_names]
         for script in scripts:
-            script['words'] = {w.strip() for w in script['words'].split(',')}
+            script['words'] = {w.strip() for w in script['words'].split(',') if w.strip()}
         return scripts
 
     def get_changes(self):

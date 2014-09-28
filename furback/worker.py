@@ -36,7 +36,8 @@ class Worker(object):
         # load scripts from filesystem into db
         for script in glob.glob("./modules/*.py"):
             meta = json.loads(open(script + ".meta").read())
-            self.db.save_script(os.path.basename(script).rstrip(".py"), open(script).read(), meta['priority'], meta['words'])
+            name, _ = os.path.splitext(os.path.basename(script))
+            self.db.save_script(name, open(script).read(), meta['priority'], meta['words'])
 
         while self._running:
             self.load_scripts()
@@ -54,6 +55,7 @@ class Worker(object):
     def load_scripts(self):
         changes = self.db.get_changes()
         if changes is not None:
+            print("Loading scripts because: %s" % changes)
             scripts = self.db.get_scripts()
             for script in scripts:
                 if len(script['words']):
@@ -68,7 +70,7 @@ class Worker(object):
         match = self.index.lookup(text)
 
         if match is None:
-            return "not found; %s\n" % tiara.Respond(text)
+            return "say not found; %s\n" % tiara.Respond(text)
 
         if isinstance(match, str):
             # we have a script body!
@@ -90,7 +92,7 @@ class Worker(object):
                     self.index.listen_for([w.strip().lower() for w in words.split(",")], runner)
                     break
                 else:
-                    print("Got: `%s`" % next_read)
+                    print("Script says: `%s`" % next_read)
                     out += next_read + "\n"
 
         return out.strip() + "\n"

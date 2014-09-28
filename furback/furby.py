@@ -57,7 +57,9 @@ def listen_for(words, timeout=1):
 
 def say(output):
     for line in output.strip().split("\n"):
-        sys.stdout.write("say %s\n" % line.strip())
+        line = line.strip()
+        if line:
+            sys.stdout.write("say %s\n" % line)
     sys.stdout.flush()
 
 def wait(wait_time):
