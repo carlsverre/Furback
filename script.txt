@@ -16,3 +16,6 @@ Pie:
    * Ok, #what #next?  /* gives one step out of three */
    * And #then? /* gives one step out of three */
    * Thanks furby /* he'll say you're welcome */
+
+Song:
+   * Furby, #sing me a #sing

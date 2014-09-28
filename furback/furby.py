@@ -1,6 +1,7 @@
 import sys
 import select
 import signal
+import random
 
 _initial_input = None
 
@@ -67,3 +68,8 @@ def do(command_name):
     assert command_name in FURBY_COMMANDS, "Must specify a valid furby command"
     sys.stdout.write("do %d\n" % FURBY_COMMANDS[command_name])
     sys.stdout.flush()
+
+def sing():
+    sys.stdout.write("do %d\n" % random.choice([721,722,723,734]))
+    sys.stdout.flush()
+    
